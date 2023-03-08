@@ -32,7 +32,7 @@ const Index = () => {
   return (
     <div className="root bg-dark text-light">
       <Container>
-        <Row className={error != '' ? 'pt-4' : ''}>
+        <Row className={error != {} ? 'pt-4' : ''}>
           <Error className="pt-4" error={error} setError={setError} />
         </Row>
         <Row>

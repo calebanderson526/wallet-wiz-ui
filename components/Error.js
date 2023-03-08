@@ -14,7 +14,7 @@ export default function Error({
         }
     }
 
-    if (error && error != '') {
+    if (error && Object.keys(error).length !== 0) {
         return (
             <Alert variant="danger" onClose={() => setError('')} dismissible>
                 <Alert.Heading>Oh snap! You got an error!</Alert.Heading>
