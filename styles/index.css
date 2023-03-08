@@ -1,0 +1,34 @@
+.root {
+    min-height: 100vh;
+}
+
+.no-token {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+    width: auto;
+    border: 2px solid;
+    border-radius: 15px;
+    color: lightgrey;
+}
+
+.bar {
+    border: 1px solid #666 5px;
+    height: 20px;
+    width: 100%;
+}
+.bar .in {
+    animation: fill 30s linear 1;
+    height: 100%;
+    background-color: blue;
+    border-radius:5px;
+}
+@keyframes fill {
+    0% {
+        width: 0%;
+   }
+    100% {
+        width: 100%;
+   }
+}
