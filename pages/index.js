@@ -25,7 +25,7 @@ const Index = () => {
       test = test && holderNames.length != 0;
       if (test) {
         const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/calculate-scores`,
-          { holders: merge_holders()},
+          { holders: merge_holders() },
           {
             headers: {
               'Content-Type': 'application/json',
@@ -112,13 +112,16 @@ const Index = () => {
           var walletTimeStatsRes = await mutateHolderCall('/get-wallet-time-stats', res.data)
           setWalletTimeStats(walletTimeStatsRes)
         })
-        // .finally(async () => {
-        //   var wallet_scores = await mutateHolderCall('/calculate-scores', merge_holders())
-        //   console.log(merge_holders().length)
-        //   console.log(wallet_scores)
-        //   setWalletScores(wallet_scores)
-        // })
+          .catch((e) => {
+            console.log(err)
+            setIsLoading(false);
+            setError(err);
+          })
         setIsLoading(false)
+      }).catch((e) => {
+        console.log(err)
+        setIsLoading(false);
+        setError(err);
       });
     } catch (err) {
       console.log(err)
