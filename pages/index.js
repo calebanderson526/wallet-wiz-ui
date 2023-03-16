@@ -89,6 +89,11 @@ const Index = () => {
 
   const handleTestToken = async () => {
     setHolders([]);
+    setWalletScores([])
+    setWalletTimeStats([])
+    setHolderBalances([])
+    setHolderRugVsApe([])
+    setHolderNames([])
     setIsLoading(true);
     try {
 
@@ -140,6 +145,16 @@ const Index = () => {
     }
   };
 
+  const calculate_average_score = () => {
+    const sum = walletScores.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.wallet_score;
+    }, 0);
+    
+    const average = sum / walletScores.length;
+
+    return average
+  }
+
   var dexscreener_url = token.address ? "https://dexscreener.com/arbitrum/" + token.pairAddress + "?embed=1&theme=dark" : ''
   return (
     <div className="root bg-dark text-light">
@@ -162,11 +177,17 @@ const Index = () => {
             setToken={setToken}
           />
         </Row>
-        {token.address ? 
-        <Row>
-          <div id="dexscreener-embed"><iframe src={dexscreener_url}></iframe></div>
-        </Row> 
-        : ''
+        {token.address ?
+          <Row>
+            <div id="dexscreener-embed"><iframe src={dexscreener_url}></iframe></div>
+          </Row>
+          : ''
+        }
+        {
+          walletScores.length != 0 ? 
+            <Row className='mt-4'>
+              <h4><strong>Average Wallet Score: {calculate_average_score()}</strong></h4>
+            </Row> : ''
         }
         <Row>
           <Col>
@@ -192,11 +213,13 @@ const Index = () => {
                     <tr key={index}>
                       <td>{index + 1}</td>
                       <td>
-                        {
-                          holder.address_name ?
-                            holder.address_name
-                            : holder.address
-                        }
+                        <a href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${holder.address}`}>
+                          {
+                            holder.address_name ?
+                              holder.address_name
+                              : holder.address
+                          }
+                        </a>
                       </td>
                       <td>
                         {
@@ -227,33 +250,33 @@ const Index = () => {
                       <td>
                         {
                           !holder.address_name ?
-                            holder.avg_time == undefined ?
+                            walletTimeStats.length == 0 ?
                               <Placeholder animation="glow">
                                 <Placeholder xs={8} />
                               </Placeholder> :
-                              `${Number(holder.avg_time).toFixed(1)} hrs`
+                              `${holder.avg_time ? Number(holder.avg_time).toFixed(1) : '?'} hrs`
                             : 'N/A'
                         }
                       </td>
                       <td>
                         {
                           !holder.address_name ?
-                            holder.wallet_age == undefined ?
+                            walletTimeStats.length == 0 ?
                               <Placeholder animation="glow">
                                 <Placeholder xs={8} />
                               </Placeholder> :
-                              `${holder.wallet_age} days`
+                              `${holder.wallet_age ? holder.wallet_age : '?'} days`
                             : 'N/A'
                         }
                       </td>
                       <td>
                         {
                           !holder.address_name ?
-                            holder.tx_count == undefined ?
+                            walletTimeStats.length == 0 ?
                               <Placeholder animation="glow">
                                 <Placeholder xs={8} />
                               </Placeholder> :
-                              `${holder.tx_count} txns`
+                              `${holder.tx_count ? holder.tx_count : 0} txns`
                             : 'N/A'
                         }
                       </td>
