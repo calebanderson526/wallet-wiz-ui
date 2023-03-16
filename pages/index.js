@@ -149,7 +149,7 @@ const Index = () => {
     const sum = walletScores.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.wallet_score;
     }, 0);
-    
+
     const average = sum / walletScores.length;
 
     return average
@@ -163,8 +163,27 @@ const Index = () => {
         <Row className={error != {} ? 'pt-4' : ''}>
           <Error className="pt-4" error={error} setError={setError} />
         </Row>
-        <Row>
-          <h1 className="text-center mt-4 mb-4">Wallet Wiz</h1>
+        <Row
+          className='align-items-center mb-4 mt-3'
+        >
+          <Col
+            md={{ span: 2 }}
+          >
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              className='btn btn-secondary'
+              href="https://t.me/WalletWiz"
+            >
+              Join
+              <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" />
+            </a>
+          </Col>
+          <Col
+            md={{ span: 8 }}
+          >
+            <h1 className="text-center">Wallet Wiz</h1>
+          </Col>
         </Row>
         <Row>
           <SearchBox
@@ -184,7 +203,7 @@ const Index = () => {
           : ''
         }
         {
-          walletScores.length != 0 ? 
+          walletScores.length != 0 ?
             <Row className='mt-4'>
               <h4><strong>Average Wallet Score: {calculate_average_score()}</strong></h4>
             </Row> : ''
@@ -213,7 +232,11 @@ const Index = () => {
                     <tr key={index}>
                       <td>{index + 1}</td>
                       <td>
-                        <a href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${holder.address}`}>
+                        <a
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${holder.address}`}
+                        >
                           {
                             holder.address_name ?
                               holder.address_name
