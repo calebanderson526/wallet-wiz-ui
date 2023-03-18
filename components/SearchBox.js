@@ -7,7 +7,6 @@ const SearchBox = ({
     setSearchQuery,
     searchResults,
     setSearchResults,
-    setError,
     setToken
 }) => {
     
@@ -20,7 +19,6 @@ const SearchBox = ({
                 var filtered_results = filterAndGroup(result.data.pairs)
                 setSearchResults(filtered_results);
             } catch (error) {
-                setError(error)
                 console.log(error);
             }
         };

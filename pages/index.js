@@ -119,13 +119,22 @@ const Index = () => {
         ).then(async (res) => {
           setHolderNames(res.data)
 
-          var holderBalancesRes = await mutateHolderCall('/get-holder-balances', res.data)
-          var holderRugVsApeRes = await mutateHolderCall('/get-holder-rug-vs-ape', res.data)
-          var walletTimeStatsRes = await mutateHolderCall('/get-wallet-time-stats', res.data)
 
-          setHolderBalances(holderBalancesRes)
-          setHolderRugVsApe(holderRugVsApeRes)
-          setWalletTimeStats(walletTimeStatsRes)
+          mutateHolderCall('/get-holder-balances', res.data)
+            .then((holderBalancesRes) => {
+              setHolderBalances(holderBalancesRes)
+            })
+
+          mutateHolderCall('/get-holder-rug-vs-ape', res.data)
+            .then((holderRugVsApeRes) => {
+              setHolderRugVsApe(holderRugVsApeRes)
+            })
+
+          mutateHolderCall('/get-wallet-time-stats', res.data)
+            .then((walletTimeStatsRes) => {
+              setWalletTimeStats(walletTimeStatsRes)
+            })
+x
         })
           .catch((err) => {
             console.log(err)
@@ -205,7 +214,7 @@ const Index = () => {
         {
           walletScores.length != 0 ?
             <Row className='mt-4'>
-              <h4><strong>Average Wallet Score: {calculate_average_score()}</strong></h4>
+              <h4><strong>Average Wallet Health: {50 + calculate_average_score()}%</strong></h4>
             </Row> : ''
         }
         <Row>
@@ -220,7 +229,7 @@ const Index = () => {
                     <th>Holder</th>
                     <th>Amount<br /><small>(tokens held)</small></th>
                     <th>Wallet Value<br /><small>(USDC, ETH, USDT)</small></th>
-                    <th>Rugs / Apes<br /><small>(SushiSwap)</small></th>
+                    <th>Rugs / Apes</th>
                     <th>Avg Time Between TX <br /><small>(hours)</small></th>
                     <th>Wallet Age<br /><small>(days)</small></th>
                     <th>Tx Count</th>
@@ -310,7 +319,7 @@ const Index = () => {
                               <Placeholder animation="glow">
                                 <Placeholder xs={8} />
                               </Placeholder> :
-                              `${holder.wallet_score}`
+                              `${holder.wallet_score + 50}%`
                             : 'N/A'
                         }
                       </td>
@@ -320,7 +329,7 @@ const Index = () => {
               </Table>
             ) : (
               !isLoading ? (
-                <h3 className="no-token mt-4">No token address entered yet</h3>
+                <h3 className="no-token mt-4">No token entered yet</h3>
               ) : (
                 <>
                   <div className="text-center">
