@@ -4,6 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import Error from '../components/Error.js'
 import SearchBox from '../components/SearchBox'
+import FilterForm from '../components/FilterForm'
+import TableHeadToolTip from '../components/TableHeadToolTip'
 
 
 const Index = () => {
@@ -18,6 +20,17 @@ const Index = () => {
   const [error, setError] = useState({});
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
+  const [sortField, setSortField] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [filterValues, setFilterValues] = useState({
+    amount: 0,
+    wallet_value: 0,
+    rug_count: 0,
+    ape_count: 0,
+    avg_time: 0,
+    wallet_age: 0,
+    wallet_score: 0,
+  });
 
   useEffect(() => {
     // declare the data fetching function
@@ -67,6 +80,27 @@ const Index = () => {
       })
     }
     return merged
+  }
+
+  const filtered_holders = () => {
+    if (!walletScores.length) {
+      return sortedHolders
+    }
+    return sortedHolders.filter((holder) => {
+      if (holder.is_contract) {
+        return holder.holding >= filterValues.amount &&
+        holder.wallet_value >= filterValues.wallet_value
+      }
+      return (
+        (holder.holding == undefined || holder.holding >= filterValues.amount) &&
+        (holder.wallet_value == undefined || holder.wallet_value >= filterValues.wallet_value) &&
+        (holder.rug_count == undefined || holder.rug_count >= filterValues.rug_count) &&
+        (holder.ape_count == undefined || holder.ape_count >= filterValues.ape_count) &&
+        (holder.avg_time == undefined || holder.avg_time >= filterValues.avg_time) &&
+        (holder.wallet_age == undefined || holder.wallet_age >= filterValues.wallet_age) &&
+        (holder.wallet_score == undefined || holder.wallet_score >= filterValues.wallet_score - 50)
+      );
+    });
   }
 
   const mutateHolderCall = async (route, cur_holders) => {
@@ -134,7 +168,7 @@ const Index = () => {
             .then((walletTimeStatsRes) => {
               setWalletTimeStats(walletTimeStatsRes)
             })
-x
+
         })
           .catch((err) => {
             console.log(err)
@@ -154,6 +188,27 @@ x
     }
   };
 
+  const sortedHolders = sortField
+    ? [...merge_holders()].sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      if (sortOrder === "asc") {
+        return aValue < bValue ? -1 : 1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    })
+    : merge_holders();
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
+
   const calculate_average_score = () => {
     const sum = walletScores.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.wallet_score;
@@ -168,7 +223,6 @@ x
   return (
     <div className="root bg-dark text-light">
       <Container>
-
         <Row className={error != {} ? 'pt-4' : ''}>
           <Error className="pt-4" error={error} setError={setError} />
         </Row>
@@ -217,27 +271,196 @@ x
               <h4><strong>Average Wallet Health: {50 + calculate_average_score()}%</strong></h4>
             </Row> : ''
         }
+        {
+          holders.length ?
+            <FilterForm
+              filterValues={filterValues}
+              setFilterValues={setFilterValues}
+            />
+            : ''
+        }
         <Row>
           <Col>
-
-
             {holders.length != 0 ? (
               <Table striped bordered hover variant="dark" className="mt-4">
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Holder</th>
-                    <th>Amount<br /><small>(tokens held)</small></th>
-                    <th>Wallet Value<br /><small>(USDC, ETH, USDT)</small></th>
-                    <th>Rugs / Apes</th>
-                    <th>Avg Time Between TX <br /><small>(hours)</small></th>
-                    <th>Wallet Age<br /><small>(days)</small></th>
-                    <th>Tx Count</th>
-                    <th>Wallet Health</th>
+                    <th>Holder <TableHeadToolTip headerName='holder' /></th>
+                    <th onClick={() => handleSort("holding")}>
+                      Amount<br />
+                      <small>(tokens held)</small><br />
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "holding" && sortOrder === "asc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9650;
+                      </Button>
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "holding" && sortOrder === "desc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9660;
+                      </Button>
+                      <TableHeadToolTip headerName='amount' />
+                    </th>
+                    <th onClick={() => handleSort("wallet_value")}>
+                      Wallet Value<br />
+                      <small>(USDC, ETH, USDT)</small><br />
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "wallet_value" && sortOrder === "asc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9650;
+                      </Button>
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "wallet_value" && sortOrder === "desc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9660;
+                      </Button>
+                      <TableHeadToolTip headerName='wallet value' />
+                    </th>
+                    <th onClick={() => handleSort("rug_count")}>
+                      Rugs / Apes<br />
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "rug_count" && sortOrder === "asc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9650;
+                      </Button>
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "rug_count" && sortOrder === "desc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9660;
+                      </Button>
+                      <TableHeadToolTip headerName='rugs / apes' />
+                    </th>
+                    <th onClick={() => handleSort("avg_time")}>
+                      Avg Time Between TX <br /><small>(hours)</small><br />
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "avg_time" && sortOrder === "asc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9650;
+                      </Button>
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "avg_time" && sortOrder === "desc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9660;
+                      </Button>
+                      <TableHeadToolTip headerName='avg time between tx' />
+                    </th>
+                    <th onClick={() => handleSort("wallet_age")}>
+                      Wallet Age<br /><small>(days)</small><br />
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "wallet_age" && sortOrder === "asc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9650;
+                      </Button>
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "wallet_age" && sortOrder === "desc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9660;
+                      </Button>
+                      <TableHeadToolTip headerName='wallet age' />
+                    </th>
+                    <th onClick={() => handleSort("tx_count")}>
+                      Tx Count<br />
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "tx_count" && sortOrder === "asc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9650;
+                      </Button>
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "tx_count" && sortOrder === "desc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9660;
+                      </Button>
+                      <TableHeadToolTip headerName='tx count' />
+                    </th>
+                    <th onClick={() => handleSort("wallet_score")}>
+                      Wallet Health<br />
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "wallet_score" && sortOrder === "asc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9650;
+                      </Button>
+                      <Button
+                        variant="link"
+                        style={
+                          sortField === "wallet_score" && sortOrder === "desc"
+                            ? { "color": "blue" }
+                            : { "color": "grey" }
+                        }
+                        className="p-0 ml-1">
+                        &#9660;
+                      </Button>
+                      <TableHeadToolTip headerName='wallet health' />
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {merge_holders().map((holder, index) => (
+                  {filtered_holders().map((holder, index) => (
                     <tr key={index}>
                       <td>{index + 1}</td>
                       <td>

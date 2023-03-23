@@ -11,6 +11,8 @@ export default function Error({
             return 'Seems like the issue was on our end, our servers might be overloaded.'
         } else if (error.response && error.response.status > 400) {
             return 'The request was invalid in some way, there might be an issue with your token address.'
+        } else {
+            return 'The request timed out'
         }
     }
 
