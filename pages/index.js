@@ -31,6 +31,7 @@ const Index = () => {
     wallet_age: 0,
     wallet_score: 0,
   });
+  const [hoursAfterLaunch, setHoursAfterLaunch] = useState(-1);
 
   useEffect(() => {
     // declare the data fetching function
@@ -60,9 +61,7 @@ const Index = () => {
   }, [holders, holderBalances, holderRugVsApe, walletTimeStats, holderNames])
 
   useEffect(() => {
-    console.log(token)
     if ((token && token.address) && token.pairCreatedAt) {
-      console.log(token.pairCreatedAt)
       handleTestToken()
     }
   }, [token])
@@ -121,6 +120,10 @@ const Index = () => {
     return response.data
   }
 
+  function hoursToMilliseconds(hours) {
+    return hours * 60 * 60 * 1000;
+  }
+
   const handleTestToken = async () => {
     setHolders([]);
     setWalletScores([])
@@ -129,10 +132,14 @@ const Index = () => {
     setHolderRugVsApe([])
     setHolderNames([])
     setIsLoading(true);
+    console.log(hoursAfterLaunch)
+    console.log(hoursAfterLaunch != -1 ? token.pairCreatedAt + hoursToMilliseconds(hoursAfterLaunch) : -1)
     try {
-
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/get-holders`,
-        { address: token.address, start_date: token.pairCreatedAt },
+        { 
+          address: token.address, 
+          start_date: token.pairCreatedAt, 
+          snapshot_time: hoursAfterLaunch != -1 ? token.pairCreatedAt + hoursToMilliseconds(hoursAfterLaunch) : -1},
         {
           headers: {
             'Content-Type': 'application/json',
@@ -257,6 +264,8 @@ const Index = () => {
             setError={setError}
             handleTestToken={handleTestToken}
             setToken={setToken}
+            setHoursAfterLaunch={setHoursAfterLaunch}
+            hoursAfterLaunch={hoursAfterLaunch}
           />
         </Row>
         {token.address ?
