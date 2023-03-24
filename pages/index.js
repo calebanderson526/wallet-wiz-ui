@@ -6,6 +6,8 @@ import Error from '../components/Error.js'
 import SearchBox from '../components/SearchBox'
 import FilterForm from '../components/FilterForm'
 import TableHeadToolTip from '../components/TableHeadToolTip'
+import CommonTokens from '../components/CommonTokens'
+import HolderTable from '../components/HolderTable'
 
 
 const Index = () => {
@@ -32,6 +34,8 @@ const Index = () => {
     wallet_score: 0,
   });
   const [hoursAfterLaunch, setHoursAfterLaunch] = useState(-1);
+  const [commonRugs, setCommonRugs] = useState([])
+  const [commonApes, setCommonApes] = useState([])
 
   useEffect(() => {
     // declare the data fetching function
@@ -88,7 +92,7 @@ const Index = () => {
     return sortedHolders.filter((holder) => {
       if (holder.is_contract) {
         return holder.holding >= filterValues.amount &&
-        holder.wallet_value >= filterValues.wallet_value
+          holder.wallet_value >= filterValues.wallet_value
       }
       return (
         (holder.holding == undefined || holder.holding >= filterValues.amount) &&
@@ -131,15 +135,18 @@ const Index = () => {
     setHolderBalances([])
     setHolderRugVsApe([])
     setHolderNames([])
+    setCommonRugs([])
+    setCommonApes([])
     setIsLoading(true);
     console.log(hoursAfterLaunch)
     console.log(hoursAfterLaunch != -1 ? token.pairCreatedAt + hoursToMilliseconds(hoursAfterLaunch) : -1)
     try {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/get-holders`,
-        { 
-          address: token.address, 
-          start_date: token.pairCreatedAt, 
-          snapshot_time: hoursAfterLaunch != -1 ? token.pairCreatedAt + hoursToMilliseconds(hoursAfterLaunch) : -1},
+        {
+          address: token.address,
+          start_date: token.pairCreatedAt,
+          snapshot_time: hoursAfterLaunch != -1 ? token.pairCreatedAt + hoursToMilliseconds(hoursAfterLaunch) : -1
+        },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -168,7 +175,9 @@ const Index = () => {
 
           mutateHolderCall('/get-holder-rug-vs-ape', res.data)
             .then((holderRugVsApeRes) => {
-              setHolderRugVsApe(holderRugVsApeRes)
+              setHolderRugVsApe(holderRugVsApeRes.holders)
+              setCommonRugs(holderRugVsApeRes.common_rugs)
+              setCommonApes(holderRugVsApeRes.common_apes)
             })
 
           mutateHolderCall('/get-wallet-time-stats', res.data)
@@ -274,291 +283,45 @@ const Index = () => {
           </Row>
           : ''
         }
-        {
-          walletScores.length != 0 ?
-            <Row className='mt-4'>
-              <h4><strong>Average Wallet Health: {50 + calculate_average_score()}%</strong></h4>
-            </Row> : ''
-        }
-        {
-          holders.length ?
-            <FilterForm
-              filterValues={filterValues}
-              setFilterValues={setFilterValues}
-            />
-            : ''
-        }
+        
+        <Row className='mt-4'>
+          <Col md={{'offset': 1, 'span': 5}}>
+            <CommonTokens commonTokens={commonApes} text={'apes'} />
+          </Col>
+          <Col md ={{'offset': 0, 'span': 5}}>
+            <CommonTokens commonTokens={commonRugs} text={'rugs'} />
+          </Col>
+        </Row>
+        <Row className='mt-4 mb-2'>
+          {
+            walletScores.length != 0 ?
+              <Col md={{"span":4}}>
+                <h4><strong>Average Wallet Health: {Number(50 + calculate_average_score()).toFixed(1)}%</strong></h4>
+              </Col> : ''
+          }
+
+          {
+            holders.length ?
+              <Col>
+                <FilterForm
+                  filterValues={filterValues}
+                  setFilterValues={setFilterValues}
+                />
+              </Col>
+              : ''
+          }
+        </Row>
         <Row>
           <Col>
             {holders.length != 0 ? (
-              <Table striped bordered hover variant="dark" className="mt-4">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Holder <TableHeadToolTip headerName='holder' /></th>
-                    <th onClick={() => handleSort("holding")}>
-                      Amount<br />
-                      <small>(tokens held)</small><br />
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "holding" && sortOrder === "asc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9650;
-                      </Button>
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "holding" && sortOrder === "desc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9660;
-                      </Button>
-                      <TableHeadToolTip headerName='amount' />
-                    </th>
-                    <th onClick={() => handleSort("wallet_value")}>
-                      Wallet Value<br />
-                      <small>(USDC, ETH, USDT)</small><br />
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "wallet_value" && sortOrder === "asc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9650;
-                      </Button>
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "wallet_value" && sortOrder === "desc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9660;
-                      </Button>
-                      <TableHeadToolTip headerName='wallet value' />
-                    </th>
-                    <th onClick={() => handleSort("rug_count")}>
-                      Rugs / Apes<br />
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "rug_count" && sortOrder === "asc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9650;
-                      </Button>
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "rug_count" && sortOrder === "desc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9660;
-                      </Button>
-                      <TableHeadToolTip headerName='rugs / apes' />
-                    </th>
-                    <th onClick={() => handleSort("avg_time")}>
-                      Avg Time Between TX <br /><small>(hours)</small><br />
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "avg_time" && sortOrder === "asc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9650;
-                      </Button>
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "avg_time" && sortOrder === "desc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9660;
-                      </Button>
-                      <TableHeadToolTip headerName='avg time between tx' />
-                    </th>
-                    <th onClick={() => handleSort("wallet_age")}>
-                      Wallet Age<br /><small>(days)</small><br />
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "wallet_age" && sortOrder === "asc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9650;
-                      </Button>
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "wallet_age" && sortOrder === "desc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9660;
-                      </Button>
-                      <TableHeadToolTip headerName='wallet age' />
-                    </th>
-                    <th onClick={() => handleSort("tx_count")}>
-                      Tx Count<br />
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "tx_count" && sortOrder === "asc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9650;
-                      </Button>
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "tx_count" && sortOrder === "desc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9660;
-                      </Button>
-                      <TableHeadToolTip headerName='tx count' />
-                    </th>
-                    <th onClick={() => handleSort("wallet_score")}>
-                      Wallet Health<br />
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "wallet_score" && sortOrder === "asc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9650;
-                      </Button>
-                      <Button
-                        variant="link"
-                        style={
-                          sortField === "wallet_score" && sortOrder === "desc"
-                            ? { "color": "blue" }
-                            : { "color": "grey" }
-                        }
-                        className="p-0 ml-1">
-                        &#9660;
-                      </Button>
-                      <TableHeadToolTip headerName='wallet health' />
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered_holders().map((holder, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>
-                        <a
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${holder.address}`}
-                        >
-                          {
-                            holder.address_name ?
-                              holder.address_name
-                              : holder.address
-                          }
-                        </a>
-                      </td>
-                      <td>
-                        {
-                          Number(holder.holding).toFixed(2)
-                        }
-                      </td>
-                      <td>
-                        ${
-                          holder.wallet_value != undefined ?
-                            Number(holder.wallet_value).toFixed(2)
-                            :
-                            <Placeholder animation="glow">
-                              <Placeholder xs={8} />
-                            </Placeholder>
-                        }
-                      </td>
-                      <td>
-                        {
-                          !holder.address_name
-                            ? holder.rug_count == undefined ?
-                              <Placeholder animation="glow">
-                                <Placeholder xs={8} />
-                              </Placeholder> :
-                              `${holder.rug_count} rugs / ${holder.ape_count} apes`
-                            : 'N/A'
-                        }
-                      </td>
-                      <td>
-                        {
-                          !holder.address_name ?
-                            walletTimeStats.length == 0 ?
-                              <Placeholder animation="glow">
-                                <Placeholder xs={8} />
-                              </Placeholder> :
-                              `${holder.avg_time ? Number(holder.avg_time).toFixed(1) : '?'} hrs`
-                            : 'N/A'
-                        }
-                      </td>
-                      <td>
-                        {
-                          !holder.address_name ?
-                            walletTimeStats.length == 0 ?
-                              <Placeholder animation="glow">
-                                <Placeholder xs={8} />
-                              </Placeholder> :
-                              `${holder.wallet_age ? holder.wallet_age : '?'} days`
-                            : 'N/A'
-                        }
-                      </td>
-                      <td>
-                        {
-                          !holder.address_name ?
-                            walletTimeStats.length == 0 ?
-                              <Placeholder animation="glow">
-                                <Placeholder xs={8} />
-                              </Placeholder> :
-                              `${holder.tx_count ? holder.tx_count : 0} txns`
-                            : 'N/A'
-                        }
-                      </td>
-                      <td>
-                        {
-                          !holder.address_name ?
-                            holder.wallet_score == undefined ?
-                              <Placeholder animation="glow">
-                                <Placeholder xs={8} />
-                              </Placeholder> :
-                              `${holder.wallet_score + 50}%`
-                            : 'N/A'
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+              <HolderTable 
+                sortField={sortField}
+                sortOrder={sortOrder}
+                handleSort={handleSort}
+                holders={holders}
+                filtered_holders={filtered_holders}
+                walletTimeStats={walletTimeStats}
+              />
             ) : (
               !isLoading ? (
                 <h3 className="no-token mt-4">No token entered yet</h3>

@@ -54,3 +54,12 @@
 	left:0;
 	border:0;
 }
+
+.card-header {
+    border-color: grey !important;
+
+}
+
+.card {
+    border-color: grey !important;
+}

@@ -25,6 +25,10 @@ const TableHeadToolTip = ({ headerName }) => {
                 return 'The total number of transactions made by the wallet or account.';
             case 'wallet health':
                 return 'A cumulative score calculated using the on chain data analyzed by Wallet Wiz';
+            case 'common apes':
+                return 'These are the apes and how common they were (tokens transferred from wallet) among the top 50 holders.'
+            case 'common rugs':
+                return 'These are the rugs and how common they were (tokens with no recent transfers) among the top 50 holders'
             default:
                 return '';
         }
