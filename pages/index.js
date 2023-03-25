@@ -18,6 +18,7 @@ const Index = () => {
   const [walletTimeStats, setWalletTimeStats] = useState([]);
   const [walletScores, setWalletScores] = useState([]);
   const [holderRugVsApe, setHolderRugVsApe] = useState([]);
+  const [holderEarlyAlpha, setHolderEarlyAlpha] = useState([])
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState({});
   const [searchQuery, setSearchQuery] = useState('')
@@ -45,6 +46,7 @@ const Index = () => {
       test = test && holderRugVsApe.length != 0;
       test = test && walletTimeStats.length != 0;
       test = test && holderNames.length != 0;
+      test = test && holderEarlyAlpha.length != 0;
       if (test) {
         const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/calculate-scores`,
           { holders: merge_holders() },
@@ -63,7 +65,7 @@ const Index = () => {
     fetchWalletScores()
       // make sure to catch any error
       .catch(console.error);
-  }, [holders, holderBalances, holderRugVsApe, walletTimeStats, holderNames])
+  }, [holders, holderBalances, holderRugVsApe, walletTimeStats, holderNames, holderEarlyAlpha])
 
   useEffect(() => {
     if ((token && token.address) && token.pairCreatedAt) {
@@ -82,6 +84,7 @@ const Index = () => {
         ...(holderRugVsApe.find((item) => item.address == holders[i].address)),
         ...(holderBalances.find((item) => item.address == holders[i].address)),
         ...(walletScores.find((item) => item.address == holders[i].address)),
+        ...(holderEarlyAlpha.find((item) => item.address == holders[i].address)),
       })
     }
     return merged
@@ -139,6 +142,7 @@ const Index = () => {
     setHolderNames([])
     setCommonRugs([])
     setCommonApes([])
+    setHolderEarlyAlpha([])
     setIsLoading(true);
     try {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/get-holders`,
@@ -179,6 +183,13 @@ const Index = () => {
               setHolderRugVsApe(holderRugVsApeRes.holders)
               setCommonRugs(holderRugVsApeRes.common_rugs)
               setCommonApes(holderRugVsApeRes.common_apes)
+            }).catch((error) => {
+              setError(error)
+            })
+
+          mutateHolderCall('/get-early-alpha', res.data)
+            .then((earlyAlphaRes) => {
+              setHolderEarlyAlpha(earlyAlphaRes)
             }).catch((error) => {
               setError(error)
             })
@@ -238,7 +249,7 @@ const Index = () => {
         return accumulator;
       }
     }, 0);
-    
+
     const count = walletScores.reduce((accumulator, currentValue) => {
       if (!currentValue.address_name && currentValue.wallet_score != 0) {
         return accumulator + 1;
@@ -246,9 +257,9 @@ const Index = () => {
         return accumulator;
       }
     }, 0);
-    
+
     const average = sum / count;
-    
+
     return average;
   }
 
@@ -359,6 +370,7 @@ const Index = () => {
                     holders={holders}
                     filtered_holders={filtered_holders}
                     walletTimeStats={walletTimeStats}
+                    holderEarlyAlpha={holderEarlyAlpha}
                   />
                 </>
               )

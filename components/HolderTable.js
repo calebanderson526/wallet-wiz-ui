@@ -9,7 +9,8 @@ const HolderTable = ({
     sortOrder,
     handleSort,
     walletTimeStats,
-    filtered_holders
+    filtered_holders,
+    holderEarlyAlpha
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25) // change this to the desired number of rows per page
@@ -93,6 +94,10 @@ const HolderTable = ({
                                     &#9660;
                                 </Button>
                                 <TableHeadToolTip headerName='wallet value' />
+                            </th>
+                            <th>
+                                Early Alpha <br />
+                                <TableHeadToolTip headerName='early alpha' />
                             </th>
                             <th onClick={() => handleSort("rug_count")}>
                                 Rugs / Apes<br />
@@ -259,6 +264,28 @@ const HolderTable = ({
                                                 <Placeholder animation="glow">
                                                     <Placeholder xs={8} />
                                                 </Placeholder>
+                                        }
+                                    </td>
+                                    <td>
+                                        {
+                                            holder && !holder.address_name
+                                                ? holder && holderEarlyAlpha.length == 0 ?
+                                                    <Placeholder animation="glow">
+                                                        <Placeholder xs={8} />
+                                                    </Placeholder> :
+                                                    <ul>{
+                                                        holder.early_alpha ? 
+                                                        holder.early_alpha.map((item, index) => (
+                                                            <>
+                                                                <li>
+                                                                    <a href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${item.token_address}`}>
+                                                                        {item.name}
+                                                                    </a>
+                                                                </li>
+                                                            </>
+                                                        )) : ''
+                                                    }</ul>
+                                                : 'N/A'
                                         }
                                     </td>
                                     <td>

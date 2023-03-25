@@ -29,6 +29,8 @@ const TableHeadToolTip = ({ headerName }) => {
                 return 'These are the apes and how common they were (tokens transferred from wallet) among the top 50 holders.'
             case 'common rugs':
                 return 'These are the rugs and how common they were (tokens with no recent transfers) among the top 50 holders'
+                case 'early alpha':
+                    return 'A list of alpha projects that these holders bought within 1 week of their launch.'
             default:
                 return '';
         }
