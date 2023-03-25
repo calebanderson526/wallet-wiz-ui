@@ -15,8 +15,13 @@ const HolderTable = ({
     const [rowsPerPage, setRowsPerPage] = useState(25) // change this to the desired number of rows per page
     const indexOfLastRow = currentPage * rowsPerPage;
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+    var placeholderArr = [...(new Array(rowsPerPage))]
     var rows = filtered_holders()
-    const currentRows = rows.slice(indexOfFirstRow, indexOfLastRow);
+    const currentRows =
+        filtered_holders().length != 0 ?
+            rows.slice(indexOfFirstRow, indexOfLastRow)
+            : placeholderArr;
+    console.log(currentRows)
     const totalPages = Math.ceil(rows.length / rowsPerPage);
 
     const handlePageChange = (newPage) => {
@@ -212,99 +217,112 @@ const HolderTable = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {currentRows.map((holder, index) => (
-                            <tr key={index}>
-                                <td>{indexOfFirstRow + index + 1}</td>
-                                <td>
-                                    <a
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${holder.address}`}
-                                    >
+                        {
+                            currentRows.map((holder, index) => (
+                                <tr key={index}>
+                                    <td>{indexOfFirstRow + index + 1}</td>
+                                    <td>
                                         {
-                                            holder.address_name ?
-                                                holder.address_name
-                                                : holder.address
+                                            holder ?
+                                                <a
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${holder.address}`}
+                                                >
+                                                    {
+                                                        holder.address_name ?
+                                                            holder.address_name
+                                                            : holder.address
+                                                    }
+                                                </a>
+                                                :
+                                                <Placeholder animation="glow">
+                                                    <Placeholder xs={8} />
+                                                </Placeholder>
                                         }
-                                    </a>
-                                </td>
-                                <td>
-                                    {
-                                        Number(holder.holding).toFixed(2)
-                                    }
-                                </td>
-                                <td>
-                                    ${
-                                        holder.wallet_value != undefined ?
-                                            Number(holder.wallet_value).toFixed(2)
-                                            :
-                                            <Placeholder animation="glow">
-                                                <Placeholder xs={8} />
-                                            </Placeholder>
-                                    }
-                                </td>
-                                <td>
-                                    {
-                                        !holder.address_name
-                                            ? holder.rug_count == undefined ?
+                                    </td>
+                                    <td>
+                                        {
+                                            holder && holder.holding ?
+                                                Number(holder.holding).toFixed(2)
+                                                :
                                                 <Placeholder animation="glow">
                                                     <Placeholder xs={8} />
-                                                </Placeholder> :
-                                                `${holder.rug_count} rugs / ${holder.ape_count} apes`
-                                            : 'N/A'
-                                    }
-                                </td>
-                                <td>
-                                    {
-                                        !holder.address_name ?
-                                            walletTimeStats.length == 0 ?
+                                                </Placeholder>
+                                        }
+                                    </td>
+                                    <td>
+                                        ${
+                                            holder && holder.wallet_value != undefined ?
+                                                Number(holder.wallet_value).toFixed(2)
+                                                :
                                                 <Placeholder animation="glow">
                                                     <Placeholder xs={8} />
-                                                </Placeholder> :
-                                                `${holder.avg_time ? Number(holder.avg_time).toFixed(1) : '?'} hrs`
-                                            : 'N/A'
-                                    }
-                                </td>
-                                <td>
-                                    {
-                                        !holder.address_name ?
-                                            walletTimeStats.length == 0 ?
-                                                <Placeholder animation="glow">
-                                                    <Placeholder xs={8} />
-                                                </Placeholder> :
-                                                `${holder.wallet_age ? holder.wallet_age : '?'} days`
-                                            : 'N/A'
-                                    }
-                                </td>
-                                <td>
-                                    {
-                                        !holder.address_name ?
-                                            walletTimeStats.length == 0 ?
-                                                <Placeholder animation="glow">
-                                                    <Placeholder xs={8} />
-                                                </Placeholder> :
-                                                `${holder.tx_count ? holder.tx_count : 0} txns`
-                                            : 'N/A'
-                                    }
-                                </td>
-                                <td>
-                                    {
-                                        !holder.address_name ?
-                                            holder.wallet_score == undefined ?
-                                                <Placeholder animation="glow">
-                                                    <Placeholder xs={8} />
-                                                </Placeholder> :
-                                                `${holder.wallet_score + 50}%`
-                                            : 'N/A'
-                                    }
-                                </td>
-                            </tr>
-                        ))}
+                                                </Placeholder>
+                                        }
+                                    </td>
+                                    <td>
+                                        {
+                                            holder && !holder.address_name
+                                                ? holder && holder.rug_count == undefined ?
+                                                    <Placeholder animation="glow">
+                                                        <Placeholder xs={8} />
+                                                    </Placeholder> :
+                                                    `${holder.rug_count} rugs / ${holder.ape_count} apes`
+                                                : 'N/A'
+                                        }
+                                    </td>
+                                    <td>
+                                        {
+                                            holder && !holder.address_name ?
+                                                walletTimeStats.length == 0 ?
+                                                    <Placeholder animation="glow">
+                                                        <Placeholder xs={8} />
+                                                    </Placeholder> :
+                                                    `${holder.avg_time ? Number(holder.avg_time).toFixed(1) : '?'} hrs`
+                                                : 'N/A'
+                                        }
+                                    </td>
+                                    <td>
+                                        {
+                                            holder && !holder.address_name ?
+                                                walletTimeStats.length == 0 ?
+                                                    <Placeholder animation="glow">
+                                                        <Placeholder xs={8} />
+                                                    </Placeholder> :
+                                                    `${holder.wallet_age ? holder.wallet_age : '?'} days`
+                                                : 'N/A'
+                                        }
+                                    </td>
+                                    <td>
+                                        {
+                                            holder && !holder.address_name ?
+                                                walletTimeStats.length == 0 ?
+                                                    <Placeholder animation="glow">
+                                                        <Placeholder xs={8} />
+                                                    </Placeholder> :
+                                                    `${holder.tx_count ? holder.tx_count : 0} txns`
+                                                : 'N/A'
+                                        }
+                                    </td>
+                                    <td>
+                                        {
+                                            holder && !holder.address_name ?
+                                                holder.wallet_score == undefined ?
+                                                    <Placeholder animation="glow">
+                                                        <Placeholder xs={8} />
+                                                    </Placeholder> :
+                                                    `${holder.wallet_score + 50}%`
+                                                : 'N/A'
+                                        }
+                                    </td>
+                                </tr>
+                            ))}
                     </tbody>
                 </Table>
             </Row>
             <Row className='align-items-center'>
-                <Col md={{"span":"1"}}>
+                <Col md={{ "span": "1" }}>
                     <Pagination
                         className="mt-4"
                         size="sm"

@@ -36,6 +36,7 @@ const Index = () => {
   const [hoursAfterLaunch, setHoursAfterLaunch] = useState(-1);
   const [commonRugs, setCommonRugs] = useState([])
   const [commonApes, setCommonApes] = useState([])
+  const [showCommonCards, setShowCommonCards] = useState(false)
 
   useEffect(() => {
     // declare the data fetching function
@@ -67,6 +68,7 @@ const Index = () => {
   useEffect(() => {
     if ((token && token.address) && token.pairCreatedAt) {
       handleTestToken()
+      setShowCommonCards(true)
     }
   }, [token])
 
@@ -138,8 +140,6 @@ const Index = () => {
     setCommonRugs([])
     setCommonApes([])
     setIsLoading(true);
-    console.log(hoursAfterLaunch)
-    console.log(hoursAfterLaunch != -1 ? token.pairCreatedAt + hoursToMilliseconds(hoursAfterLaunch) : -1)
     try {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/get-holders`,
         {
@@ -155,7 +155,6 @@ const Index = () => {
         }
       ).then(async (res) => {
         setHolders(res.data)
-
         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/get-contract-names`,
           { holders: res.data },
           {
@@ -171,6 +170,8 @@ const Index = () => {
           mutateHolderCall('/get-holder-balances', res.data)
             .then((holderBalancesRes) => {
               setHolderBalances(holderBalancesRes)
+            }).catch((error) => {
+              setError(error)
             })
 
           mutateHolderCall('/get-holder-rug-vs-ape', res.data)
@@ -178,11 +179,15 @@ const Index = () => {
               setHolderRugVsApe(holderRugVsApeRes.holders)
               setCommonRugs(holderRugVsApeRes.common_rugs)
               setCommonApes(holderRugVsApeRes.common_apes)
+            }).catch((error) => {
+              setError(error)
             })
 
           mutateHolderCall('/get-wallet-time-stats', res.data)
             .then((walletTimeStatsRes) => {
               setWalletTimeStats(walletTimeStatsRes)
+            }).catch((error) => {
+              setError(error)
             })
 
         })
@@ -283,71 +288,73 @@ const Index = () => {
           </Row>
           : ''
         }
-        
+
         <Row className='mt-4'>
-          <Col md={{'offset': 1, 'span': 5}}>
-            <CommonTokens commonTokens={commonApes} text={'apes'} />
+          <Col md={{ 'offset': 1, 'span': 5 }}>
+            <CommonTokens
+              commonTokens={commonApes}
+              text={'apes'}
+              showCommonCards={showCommonCards} />
           </Col>
-          <Col md ={{'offset': 0, 'span': 5}}>
-            <CommonTokens commonTokens={commonRugs} text={'rugs'} />
+          <Col md={{ 'offset': 0, 'span': 5 }}>
+            <CommonTokens
+              commonTokens={commonRugs}
+              text={'rugs'}
+              showCommonCards={showCommonCards}
+            />
           </Col>
         </Row>
-        <Row className='mt-4 mb-2'>
-          {
-            walletScores.length != 0 ?
-              <Col md={{"span":4}}>
-                <h4><strong>Average Wallet Health: {Number(50 + calculate_average_score()).toFixed(1)}%</strong></h4>
-              </Col> : ''
-          }
-
-          {
-            holders.length ?
+        <Row className={error != {} ? 'pt-4' : ''}>
+          <Error className="pt-4" error={error} setError={setError} />
+        </Row>
+        {token.address ?
+          <>
+            <Row className='mt-4 mb-2'>
+              <Col md={{ "span": 4 }}>
+                <h4>
+                  <strong>
+                    Average Wallet Health: {
+                      walletScores.length != 0 ?
+                        Number(50 + calculate_average_score()).toFixed(1) :
+                        <Placeholder animation="glow">
+                          <Placeholder xs={2} />
+                        </Placeholder>
+                    }%
+                  </strong>
+                </h4>
+              </Col>
               <Col>
                 <FilterForm
                   filterValues={filterValues}
                   setFilterValues={setFilterValues}
                 />
               </Col>
-              : ''
-          }
-        </Row>
+            </Row>
+          </>
+          : ''
+        }
         <Row>
           <Col>
-            {holders.length != 0 ? (
-              <HolderTable 
-                sortField={sortField}
-                sortOrder={sortOrder}
-                handleSort={handleSort}
-                holders={holders}
-                filtered_holders={filtered_holders}
-                walletTimeStats={walletTimeStats}
-              />
-            ) : (
-              !isLoading ? (
+            {
+              !isLoading && holders.length == 0 ? (
                 <h3 className="no-token mt-4">No token entered yet</h3>
               ) : (
                 <>
-                  <div className="text-center">
-                    <Row className="mt-4">
-                      <h3>
-                        Processing request for {token.address}
-                      </h3>
-                    </Row>
-                    <Row>
-                      <h5>Sit tight! This usually takes about 30 seconds</h5>
-                    </Row>
-                  </div>
-                  <div className="bar mt-4">
-                    <div className="in"></div>
-                  </div>
-                  <br />
+                  <HolderTable
+                    sortField={sortField}
+                    sortOrder={sortOrder}
+                    handleSort={handleSort}
+                    holders={holders}
+                    filtered_holders={filtered_holders}
+                    walletTimeStats={walletTimeStats}
+                  />
                 </>
               )
-            )}
+            }
           </Col>
         </Row>
       </Container>
-    </div>
+    </div >
   );
 };
 

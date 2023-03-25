@@ -1,9 +1,9 @@
 import { React, useState } from 'react';
-import { Card, Table } from 'react-bootstrap';
+import { Card, Table, Placeholder } from 'react-bootstrap';
 import TableHeadToolTip from '../components/TableHeadToolTip'
 import Pagination from 'react-bootstrap/Pagination'
 
-const CommonTokens = ({ commonTokens, text }) => {
+const CommonTokens = ({ commonTokens, text, showCommonCards }) => {
   const [currentPage, setCurrentPage] = useState(1);
   var rowsPerPage = 5 // change this to the desired number of rows per page
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -18,18 +18,18 @@ const CommonTokens = ({ commonTokens, text }) => {
 
   const paginationNums = () => {
     if (currentPage + 2 >= totalPages) {
-      return { first : currentPage - 4 + totalPages - currentPage, last : totalPages}
+      return { first: currentPage - 4 + totalPages - currentPage, last: totalPages }
     } else if (currentPage - 2 <= 1) {
-      return { first : 1, last : 5}
+      return { first: 1, last: 5 }
     } else {
-      return { first : currentPage - 2, last : currentPage + 2}
+      return { first: currentPage - 2, last: currentPage + 2 }
     }
   }
 
-  if (!commonTokens.length) {
+  var placeholderArr = [1, 2, 3, 4, 5]
+  if (!showCommonCards) {
     return ''
   }
-
   return (
     <Card size="sm" className='bg-dark'>
       <Card.Header>
@@ -46,17 +46,34 @@ const CommonTokens = ({ commonTokens, text }) => {
             </tr>
           </thead>
           <tbody>
-            {currentRows.map((token, index) => (
-              <tr key={token.address}>
-                <td className='text-white'>{(currentPage - 1) * rowsPerPage + index + 1}</td>
-                <td className='text-white'>
-                  <a href={`https://arbiscan.io/address/${token.address}`}>
-                    {token.name ? token.name : 'Unknown Token'}
-                  </a>
-                </td>
-                <td className='text-white'>{token.count}</td>
-              </tr>
-            ))}
+            {
+              commonTokens.length != 0 ? currentRows.map((token, index) => (
+                <tr key={token.address}>
+                  <td className='text-white'>{(currentPage - 1) * rowsPerPage + index + 1}</td>
+                  <td className='text-white'>
+                    <a href={`https://arbiscan.io/address/${token.address}`}>
+                      {token.name ? token.name : 'Unknown Token'}
+                    </a>
+                  </td>
+                  <td className='text-white'>{token.count}</td>
+                </tr>
+              )) :
+                placeholderArr.map((token, index) => (
+                  <tr key={index}>
+                    <td className='text-white'>{(currentPage - 1) * rowsPerPage + index + 1}</td>
+                    <td className='text-white'>
+                      <Placeholder animation="glow">
+                        <Placeholder xs={8} />
+                      </Placeholder>
+                    </td>
+                    <td className='text-white'>
+                      <Placeholder animation="glow">
+                        <Placeholder xs={8} />
+                      </Placeholder>
+                    </td>
+                  </tr>
+                ))
+            }
           </tbody>
         </Table>
 
@@ -83,7 +100,7 @@ const CommonTokens = ({ commonTokens, text }) => {
               </Pagination.Item>
             )
           )}
-          <Pagination.Next onClick={() => handlePageChange(currentPage + 1 >= totalPages ? totalPages : currentPage + 1)}/>
+          <Pagination.Next onClick={() => handlePageChange(currentPage + 1 >= totalPages ? totalPages : currentPage + 1)} />
           <Pagination.Last onClick={() => handlePageChange(totalPages)} />
         </Pagination>
 
