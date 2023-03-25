@@ -232,12 +232,24 @@ const Index = () => {
 
   const calculate_average_score = () => {
     const sum = walletScores.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.wallet_score;
+      if (!currentValue.address_name && currentValue.wallet_score != 0) {
+        return accumulator + currentValue.wallet_score;
+      } else {
+        return accumulator;
+      }
     }, 0);
-
-    const average = sum / walletScores.length;
-
-    return average
+    
+    const count = walletScores.reduce((accumulator, currentValue) => {
+      if (!currentValue.address_name && currentValue.wallet_score != 0) {
+        return accumulator + 1;
+      } else {
+        return accumulator;
+      }
+    }, 0);
+    
+    const average = sum / count;
+    
+    return average;
   }
 
   var dexscreener_url = token.address ? "https://dexscreener.com/arbitrum/" + token.pairAddress + "?embed=1&theme=dark" : ''
