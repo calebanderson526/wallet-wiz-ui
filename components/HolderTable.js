@@ -195,30 +195,6 @@ const HolderTable = ({
                                 </Button>
                                 <TableHeadToolTip headerName='tx count' />
                             </th>
-                            <th onClick={() => handleSort("wallet_score")}>
-                                Wallet Health<br />
-                                <Button
-                                    variant="link"
-                                    style={
-                                        sortField === "wallet_score" && sortOrder === "asc"
-                                            ? { "color": "blue" }
-                                            : { "color": "grey" }
-                                    }
-                                    className="p-0 ml-1">
-                                    &#9650;
-                                </Button>
-                                <Button
-                                    variant="link"
-                                    style={
-                                        sortField === "wallet_score" && sortOrder === "desc"
-                                            ? { "color": "blue" }
-                                            : { "color": "grey" }
-                                    }
-                                    className="p-0 ml-1">
-                                    &#9660;
-                                </Button>
-                                <TableHeadToolTip headerName='wallet health' />
-                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -329,17 +305,6 @@ const HolderTable = ({
                                                         <Placeholder xs={8} />
                                                     </Placeholder> :
                                                     `${holder.tx_count ? holder.tx_count : 0} txns`
-                                                : 'N/A'
-                                        }
-                                    </td>
-                                    <td>
-                                        {
-                                            holder && !holder.address_name ?
-                                                holder.wallet_score == undefined ?
-                                                    <Placeholder animation="glow">
-                                                        <Placeholder xs={8} />
-                                                    </Placeholder> :
-                                                    `${holder.wallet_score + 50}%`
                                                 : 'N/A'
                                         }
                                     </td>

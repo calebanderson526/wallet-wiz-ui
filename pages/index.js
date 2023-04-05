@@ -16,7 +16,6 @@ const Index = () => {
   const [holderBalances, setHolderBalances] = useState([]);
   const [holderNames, setHolderNames] = useState([]);
   const [walletTimeStats, setWalletTimeStats] = useState([]);
-  const [walletScores, setWalletScores] = useState([]);
   const [holderRugVsApe, setHolderRugVsApe] = useState([]);
   const [holderEarlyAlpha, setHolderEarlyAlpha] = useState([])
   const [isLoading, setIsLoading] = useState(false);
@@ -32,40 +31,12 @@ const Index = () => {
     ape_count: 0,
     avg_time: 0,
     wallet_age: 0,
-    wallet_score: 0,
   });
   const [hoursAfterLaunch, setHoursAfterLaunch] = useState(-1);
   const [commonRugs, setCommonRugs] = useState([])
   const [commonApes, setCommonApes] = useState([])
   const [showCommonCards, setShowCommonCards] = useState(false)
 
-  useEffect(() => {
-    // declare the data fetching function
-    const fetchWalletScores = async () => {
-      var test = holders.length != 0 && holderBalances.length != 0;
-      test = test && holderRugVsApe.length != 0;
-      test = test && walletTimeStats.length != 0;
-      test = test && holderNames.length != 0;
-      test = test && holderEarlyAlpha.length != 0;
-      if (test) {
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/calculate-scores`,
-          { holders: merge_holders() },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*'
-            }
-          }
-        );
-        setWalletScores(response.data)
-      }
-    }
-
-    // call the function
-    fetchWalletScores()
-      // make sure to catch any error
-      .catch(console.error);
-  }, [holders, holderBalances, holderRugVsApe, walletTimeStats, holderNames, holderEarlyAlpha])
 
   useEffect(() => {
     if ((token && token.address) && token.pairCreatedAt) {
@@ -83,7 +54,6 @@ const Index = () => {
         ...(walletTimeStats.find((item) => item.address == holders[i].address)),
         ...(holderRugVsApe.find((item) => item.address == holders[i].address)),
         ...(holderBalances.find((item) => item.address == holders[i].address)),
-        ...(walletScores.find((item) => item.address == holders[i].address)),
         ...(holderEarlyAlpha.find((item) => item.address == holders[i].address)),
       })
     }
@@ -91,7 +61,7 @@ const Index = () => {
   }
 
   const filtered_holders = () => {
-    if (!walletScores.length) {
+    if (isLoading) {
       return sortedHolders
     }
     return sortedHolders.filter((holder) => {
@@ -105,8 +75,7 @@ const Index = () => {
         (holder.rug_count == undefined || holder.rug_count >= filterValues.rug_count) &&
         (holder.ape_count == undefined || holder.ape_count >= filterValues.ape_count) &&
         (holder.avg_time == undefined || holder.avg_time >= filterValues.avg_time) &&
-        (holder.wallet_age == undefined || holder.wallet_age >= filterValues.wallet_age) &&
-        (holder.wallet_score == undefined || holder.wallet_score >= filterValues.wallet_score - 50)
+        (holder.wallet_age == undefined || holder.wallet_age >= filterValues.wallet_age)
       );
     });
   }
@@ -126,6 +95,7 @@ const Index = () => {
         }
       }
     );
+    console.log(response.data)
     return response.data
   }
 
@@ -135,7 +105,6 @@ const Index = () => {
 
   const handleTestToken = async () => {
     setHolders([]);
-    setWalletScores([])
     setWalletTimeStats([])
     setHolderBalances([])
     setHolderRugVsApe([])
@@ -145,7 +114,7 @@ const Index = () => {
     setHolderEarlyAlpha([])
     setIsLoading(true);
     try {
-      axios.post(`${process.env.NEXT_PUBLIC_API_URL}/get-holders`,
+      axios.post(`${process.env.NEXT_PUBLIC_API_URL}/holders`,
         {
           address: token.address,
           start_date: token.pairCreatedAt,
@@ -158,9 +127,9 @@ const Index = () => {
           }
         }
       ).then(async (res) => {
-        setHolders(res.data)
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/get-contract-names`,
-          { holders: res.data },
+        setHolders(res.data.holders)
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/contract-names`,
+          { holders: res.data.holders },
           {
             headers: {
               'Content-Type': 'application/json',
@@ -168,17 +137,17 @@ const Index = () => {
             }
           }
         ).then(async (res) => {
-          setHolderNames(res.data)
+          setHolderNames(res.data.holders)
 
 
-          mutateHolderCall('/get-holder-balances', res.data)
+          mutateHolderCall('/holder-balances', res.data.holders)
             .then((holderBalancesRes) => {
-              setHolderBalances(holderBalancesRes)
+              setHolderBalances(holderBalancesRes.holders)
             }).catch((error) => {
               setError(error)
             })
 
-          mutateHolderCall('/get-holder-rug-vs-ape', res.data)
+          mutateHolderCall('/holder-rug-vs-ape', res.data.holders)
             .then((holderRugVsApeRes) => {
               setHolderRugVsApe(holderRugVsApeRes.holders)
               setCommonRugs(holderRugVsApeRes.common_rugs)
@@ -187,16 +156,16 @@ const Index = () => {
               setError(error)
             })
 
-          mutateHolderCall('/get-early-alpha', res.data)
+          mutateHolderCall('/early-alpha', res.data.holders)
             .then((earlyAlphaRes) => {
-              setHolderEarlyAlpha(earlyAlphaRes)
+              setHolderEarlyAlpha(earlyAlphaRes.holders)
             }).catch((error) => {
               setError(error)
             })
 
-          mutateHolderCall('/get-wallet-time-stats', res.data)
+          mutateHolderCall('/wallet-time-stats', res.data.holders)
             .then((walletTimeStatsRes) => {
-              setWalletTimeStats(walletTimeStatsRes)
+              setWalletTimeStats(walletTimeStatsRes.holders)
             }).catch((error) => {
               setError(error)
             })
@@ -240,28 +209,6 @@ const Index = () => {
       setSortOrder("asc");
     }
   };
-
-  const calculate_average_score = () => {
-    const sum = walletScores.reduce((accumulator, currentValue) => {
-      if (!currentValue.address_name && currentValue.wallet_score != 0) {
-        return accumulator + currentValue.wallet_score;
-      } else {
-        return accumulator;
-      }
-    }, 0);
-
-    const count = walletScores.reduce((accumulator, currentValue) => {
-      if (!currentValue.address_name && currentValue.wallet_score != 0) {
-        return accumulator + 1;
-      } else {
-        return accumulator;
-      }
-    }, 0);
-
-    const average = sum / count;
-
-    return average;
-  }
 
   var dexscreener_url = token.address ? "https://dexscreener.com/arbitrum/" + token.pairAddress + "?embed=1&theme=dark" : ''
   return (
@@ -333,19 +280,6 @@ const Index = () => {
         {token.address ?
           <>
             <Row className='mt-4 mb-2'>
-              <Col md={{ "span": 4 }}>
-                <h4>
-                  <strong>
-                    Average Wallet Health: {
-                      walletScores.length != 0 ?
-                        Number(50 + calculate_average_score()).toFixed(1) :
-                        <Placeholder animation="glow">
-                          <Placeholder xs={2} />
-                        </Placeholder>
-                    }%
-                  </strong>
-                </h4>
-              </Col>
               <Col>
                 <FilterForm
                   filterValues={filterValues}
