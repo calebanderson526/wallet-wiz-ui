@@ -41,18 +41,22 @@ const CommonTokens = ({ commonTokens, text, showCommonCards }) => {
           <thead>
             <tr className='text-white'>
               <th>#</th>
-              <th>Token</th>
+              <th>Address</th>
               <th># of Traders</th>
             </tr>
           </thead>
           <tbody>
             {
               commonTokens.length != 0 ? currentRows.map((token, index) => (
-                <tr key={token.address}>
+                <tr key={index}>
                   <td className='text-white'>{(currentPage - 1) * rowsPerPage + index + 1}</td>
                   <td className='text-white'>
-                    <a href={`https://arbiscan.io/address/${token.address}`}>
-                      {token.name ? token.name : 'Unknown Token'}
+                    <a
+                      href={`https://arbiscan.io/address/${token.address ? token.address : token.funder}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {!token.name ? token.funder ? token.funder.slice(0, 8) + '. . .' + token.funder.slice(token.funder.length - 8, token.funder.length - 1) : 'Unknown Token' : token.name}
                     </a>
                   </td>
                   <td className='text-white'>{token.count}</td>

@@ -22,7 +22,6 @@ const HolderTable = ({
         filtered_holders().length != 0 ?
             rows.slice(indexOfFirstRow, indexOfLastRow)
             : placeholderArr;
-    console.log(currentRows)
     const totalPages = Math.ceil(rows.length / rowsPerPage);
 
     const handlePageChange = (newPage) => {

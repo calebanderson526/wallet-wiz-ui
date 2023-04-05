@@ -37,6 +37,7 @@ const Index = () => {
   const [commonApes, setCommonApes] = useState([])
   const [showCommonCards, setShowCommonCards] = useState(false)
   const [chain, setChain] = useState('arbitrum')
+  const [commonFunders, setCommonFunders] = useState([])
 
 
   useEffect(() => {
@@ -110,7 +111,6 @@ const Index = () => {
         }
       }
     );
-    console.log(response.data)
     return response.data
   }
 
@@ -127,6 +127,7 @@ const Index = () => {
     setCommonRugs([])
     setCommonApes([])
     setHolderEarlyAlpha([])
+    setCommonFunders([])
     setIsLoading(true);
     try {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/${chain.toLowerCase()}/holders`,
@@ -184,6 +185,22 @@ const Index = () => {
             }).catch((error) => {
               setError(error)
             })
+          axios.post(`${process.env.NEXT_PUBLIC_API_URL}/${chain.toLowerCase()}/common-funders`,
+            {
+              holders: res.data.holders,
+              timestamp: token.pairCreatedAt
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+              }
+            }
+          ).then((res) => {
+            setCommonFunders(res.data.common_funders)
+          }).catch((error) => {
+            setError(error)
+          })
 
         })
           .catch((err) => {
@@ -225,7 +242,7 @@ const Index = () => {
     }
   };
 
-  var dexscreener_url = token.address ? "https://dexscreener.com/" + chain.toLowerCase()  + "/" + token.pairAddress + "?embed=1&theme=dark" : ''
+  var dexscreener_url = token.address ? "https://dexscreener.com/" + chain.toLowerCase() + "/" + token.pairAddress + "?embed=1&theme=dark" : ''
   return (
     <div className="root bg-dark text-light">
       <Container>
@@ -259,16 +276,23 @@ const Index = () => {
         }
 
         <Row className='mt-4'>
-          <Col md={{ 'offset': 1, 'span': 5 }}>
+          <Col md={{ 'offset': 0, 'span': 4 }}>
             <CommonTokens
               commonTokens={commonApes}
               text={'apes'}
               showCommonCards={showCommonCards} />
           </Col>
-          <Col md={{ 'offset': 0, 'span': 5 }}>
+          <Col md={{ 'offset': 0, 'span': 4 }}>
             <CommonTokens
               commonTokens={commonRugs}
               text={'rugs'}
+              showCommonCards={showCommonCards}
+            />
+          </Col>
+          <Col md={{ 'offset': 0, 'span': 4 }}>
+            <CommonTokens
+              commonTokens={commonFunders}
+              text={'funders'}
               showCommonCards={showCommonCards}
             />
           </Col>
