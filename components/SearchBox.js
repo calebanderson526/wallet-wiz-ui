@@ -11,7 +11,8 @@ const SearchBox = ({
     setSearchResults,
     setToken,
     setHoursAfterLaunch,
-    hoursAfterLaunch
+    hoursAfterLaunch,
+    chain
 }) => {
 
     const [showModal, setShowModal] = useState(false); const [showSnapshotTime, setShowSnapshotTime] = useState(false);
@@ -49,8 +50,8 @@ const SearchBox = ({
 
     // removes duplicate tokens and trims results to only the necessary requirements
     function filterAndGroup(objects) {
-        // Filter out objects with chainId not equal to 'arbitrum'
-        let filtered = objects.filter(obj => obj.chainId === 'arbitrum');
+        // Filter out objects with chainId not equal to current chain
+        let filtered = objects.filter(obj => obj.chainId == chain.toLowerCase());
 
         // Filter out objects without pairCreatedAt property
         filtered = filtered.filter(obj => obj.pairCreatedAt !== undefined);
@@ -105,7 +106,7 @@ const SearchBox = ({
 
     return (
         <>
-            <Button onClick={handleModalOpen}>Search for a Token</Button>
+            <Button className='mb-2' onClick={handleModalOpen}>Search for a Token</Button>
 
             <Modal show={showModal} onHide={handleModalClose} size="xl">
                 <Modal.Header closeButton>

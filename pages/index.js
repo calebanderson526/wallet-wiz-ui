@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Table, Spinner, Placeholder, Dropdown } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import Error from '../components/Error.js'
 import SearchBox from '../components/SearchBox'
 import FilterForm from '../components/FilterForm'
-import TableHeadToolTip from '../components/TableHeadToolTip'
 import CommonTokens from '../components/CommonTokens'
 import HolderTable from '../components/HolderTable'
+import Header from '../components/Header.js'
 
 
 const Index = () => {
@@ -36,6 +36,7 @@ const Index = () => {
   const [commonRugs, setCommonRugs] = useState([])
   const [commonApes, setCommonApes] = useState([])
   const [showCommonCards, setShowCommonCards] = useState(false)
+  const [chain, setChain] = useState('arbitrum')
 
 
   useEffect(() => {
@@ -44,6 +45,20 @@ const Index = () => {
       setShowCommonCards(true)
     }
   }, [token])
+
+  useEffect(() => {
+    setToken({})
+    setHolders([]);
+    setWalletTimeStats([])
+    setHolderBalances([])
+    setHolderRugVsApe([])
+    setHolderNames([])
+    setCommonRugs([])
+    setCommonApes([])
+    setHolderEarlyAlpha([])
+    setIsLoading(false)
+    setShowCommonCards(false)
+  }, [chain])
 
   const merge_holders = () => {
     var merged = [];
@@ -86,7 +101,7 @@ const Index = () => {
     } else {
       var body = { holders: cur_holders }
     }
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}${route}`,
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/${chain.toLowerCase()}${route}`,
       body,
       {
         headers: {
@@ -114,7 +129,7 @@ const Index = () => {
     setHolderEarlyAlpha([])
     setIsLoading(true);
     try {
-      axios.post(`${process.env.NEXT_PUBLIC_API_URL}/holders`,
+      axios.post(`${process.env.NEXT_PUBLIC_API_URL}/${chain.toLowerCase()}/holders`,
         {
           address: token.address,
           start_date: token.pairCreatedAt,
@@ -128,7 +143,7 @@ const Index = () => {
         }
       ).then(async (res) => {
         setHolders(res.data.holders)
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/contract-names`,
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/${chain.toLowerCase()}/contract-names`,
           { holders: res.data.holders },
           {
             headers: {
@@ -210,7 +225,7 @@ const Index = () => {
     }
   };
 
-  var dexscreener_url = token.address ? "https://dexscreener.com/arbitrum/" + token.pairAddress + "?embed=1&theme=dark" : ''
+  var dexscreener_url = token.address ? "https://dexscreener.com/" + chain.toLowerCase()  + "/" + token.pairAddress + "?embed=1&theme=dark" : ''
   return (
     <div className="root bg-dark text-light">
       <Container>
@@ -220,24 +235,7 @@ const Index = () => {
         <Row
           className='align-items-center mb-4 mt-3'
         >
-          <Col
-            md={{ span: 2 }}
-          >
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              className='btn btn-secondary'
-              href="https://t.me/WalletWiz"
-            >
-              Join
-              <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" />
-            </a>
-          </Col>
-          <Col
-            md={{ span: 8 }}
-          >
-            <h1 className="text-center">Wallet Wiz</h1>
-          </Col>
+          <Header setChain={setChain} />
         </Row>
         <Row>
           <SearchBox
@@ -250,6 +248,7 @@ const Index = () => {
             setToken={setToken}
             setHoursAfterLaunch={setHoursAfterLaunch}
             hoursAfterLaunch={hoursAfterLaunch}
+            chain={chain}
           />
         </Row>
         {token.address ?

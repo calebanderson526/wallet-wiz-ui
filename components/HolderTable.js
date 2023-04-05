@@ -37,11 +37,39 @@ const HolderTable = ({
         }
     }
 
+    function calculateAverage(numbers) {
+        let sum = 0;
+        for (let i = 0; i < numbers.length; i++) {
+            sum += numbers[i];
+        }
+        return sum / numbers.length;
+    }
+
+    const tableAverages = () => {
+        if (!rows.length || !walletTimeStats.length || !holderEarlyAlpha.length) {
+            return ''
+        }
+        return (
+            <tr>
+                <th></th>
+                <th>Averages</th>
+                <th>{Number(calculateAverage(rows.map(r => r.holding)) * 100).toFixed(3) + ' %'}</th>
+                <th>{'$' + Number(calculateAverage(rows.map(r => r.wallet_value))).toFixed(2)}</th>
+                <th>{Number(calculateAverage(rows.map(r => r.early_alpha ? r.early_alpha.length : 0))).toFixed(2) + ' tokens'}</th>
+                <th>{Number(calculateAverage(rows.map(r => r.rug_count ? r.rug_count : 0))).toFixed(2) + ' rugs'}</th>
+                <th>{Number(calculateAverage(rows.map(r => r.avg_time ? r.avg_time : 0))).toFixed(2) + ' hours'}</th>
+                <th>{Number(calculateAverage(rows.map(r => r.wallet_age ? r.wallet_age : 0))).toFixed(2) + ' days'}</th>
+                <th>{Number(calculateAverage(rows.map(r => r.tx_count ? r.tx_count : 0))).toFixed(2) + ' txns'}</th>
+            </tr>
+        )
+    }
+
     return (
         <>
             <Row>
                 <Table striped bordered hover variant="dark" className="mt-4">
                     <thead>
+                        {tableAverages()}
                         <tr>
                             <th>#</th>
                             <th>Holder <TableHeadToolTip headerName='holder' /></th>
@@ -225,7 +253,7 @@ const HolderTable = ({
                                     <td>
                                         {
                                             holder && holder.holding ?
-                                                Number(holder.holding).toFixed(2)
+                                                Number(holder.holding * 100).toFixed(3) + ' %'
                                                 :
                                                 <Placeholder animation="glow">
                                                     <Placeholder xs={8} />
@@ -250,16 +278,16 @@ const HolderTable = ({
                                                         <Placeholder xs={8} />
                                                     </Placeholder> :
                                                     <ul>{
-                                                        holder.early_alpha ? 
-                                                        holder.early_alpha.map((item, index) => (
-                                                            <>
-                                                                <li>
-                                                                    <a href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${item.token_address}`}>
-                                                                        {item.name}
-                                                                    </a>
-                                                                </li>
-                                                            </>
-                                                        )) : ''
+                                                        holder.early_alpha ?
+                                                            holder.early_alpha.map((item, index) => (
+                                                                <>
+                                                                    <li>
+                                                                        <a href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${item.token_address}`}>
+                                                                            {item.name}
+                                                                        </a>
+                                                                    </li>
+                                                                </>
+                                                            )) : ''
                                                     }</ul>
                                                 : 'N/A'
                                         }
