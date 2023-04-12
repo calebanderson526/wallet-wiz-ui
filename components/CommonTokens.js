@@ -3,7 +3,7 @@ import { Card, Table, Placeholder } from 'react-bootstrap';
 import TableHeadToolTip from '../components/TableHeadToolTip'
 import Pagination from 'react-bootstrap/Pagination'
 
-const CommonTokens = ({ commonTokens, text, showCommonCards }) => {
+const CommonTokens = ({ commonTokens, text, showCommonCards, chain }) => {
   const [currentPage, setCurrentPage] = useState(1);
   var rowsPerPage = 5 // change this to the desired number of rows per page
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -25,7 +25,7 @@ const CommonTokens = ({ commonTokens, text, showCommonCards }) => {
       return { first: currentPage - 2, last: currentPage + 2 }
     }
   }
-
+  var block_exp_url = chain.toLowerCase() == 'ethereum' ? process.env.NEXT_PUBLIC_ETHEREUM_EXP : process.env.NEXT_PUBLIC_ARBITRUM_EXP
   var placeholderArr = [1, 2, 3, 4, 5]
   if (!showCommonCards) {
     return ''
@@ -52,7 +52,7 @@ const CommonTokens = ({ commonTokens, text, showCommonCards }) => {
                   <td className='text-white'>{(currentPage - 1) * rowsPerPage + index + 1}</td>
                   <td className='text-white'>
                     <a
-                      href={`https://arbiscan.io/address/${token.address ? token.address : token.funder}`}
+                      href={`${block_exp_url}/address/${token.address ? token.address : token.funder}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

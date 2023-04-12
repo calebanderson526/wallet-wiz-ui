@@ -60,8 +60,24 @@ const SearchBox = ({
 
         // Create two new objects for each original object
         const tokenObjects = filtered.flatMap(obj => [
-            { token: obj.baseToken, pairCreatedAt: obj.pairCreatedAt, pairAddress: obj.pairAddress },
-            { token: obj.quoteToken, pairCreatedAt: obj.pairCreatedAt, pairAddress: obj.pairAddress }
+            { 
+                token: obj.baseToken, 
+                pairCreatedAt: obj.pairCreatedAt, 
+                pairAddress: obj.pairAddress, 
+                liquidity: obj.liquidity, 
+                baseToken: obj.baseToken,
+                fdv: obj.fdv,
+                h24vol: obj.volume.h24
+            },
+            { 
+                token: obj.quoteToken, 
+                pairCreatedAt: obj.pairCreatedAt, 
+                pairAddress: obj.pairAddress, 
+                liquidity: obj.liquidity, 
+                baseToken: obj.baseToken,
+                fdv: obj.fdv,
+                h24vol: obj.volume.h24
+            }
         ]);
 
         // Remove duplicates based on token address and keep one with lowest pairCreatedAt
@@ -104,6 +120,18 @@ const SearchBox = ({
         <Tooltip id="button-tooltip">{text}</Tooltip>
     );
 
+    const calculateAge = (timestamp) => {
+        const now = (new Date()).getTime()
+        const diff = (now - timestamp)
+        const hours = Math.floor(diff / 60 / 60 / 1000)
+        const days = Math.floor(hours / 24)
+        if (days > 0) {
+            return `${days} days ${hours % 24} hrs`
+        } else {
+            return `${hours} hrs`
+        }
+    }
+
     return (
         <>
             <Button className='mb-2' onClick={handleModalOpen}>Search for a Token</Button>
@@ -118,7 +146,7 @@ const SearchBox = ({
                         <Row className="align-items-end">
                             <Col>
                                 <Form.Group controlId="searchQuery">
-                                    <Form.Label>Search Query</Form.Label>
+                                    <Form.Label>Search Query <small>  (click the one you want to analyze)  </small></Form.Label>
                                     <Form.Control
                                         type="text"
                                         value={searchQuery}
@@ -126,7 +154,7 @@ const SearchBox = ({
                                     />
                                 </Form.Group>
                             </Col>
-                            <Col md={{ "span": 2 }}>
+                            {/* <Col md={{ "span": 2 }}>
                                 <Form.Label>
                                     Set a snapshot time
                                 </Form.Label>
@@ -141,7 +169,7 @@ const SearchBox = ({
                                     </OverlayTrigger>}
                                     onChange={handleCheckboxChange}
                                 />
-                            </Col>
+                            </Col> */}
                             {showSnapshotTime && (
                                 <Col>
                                     <Form.Group>
@@ -166,18 +194,34 @@ const SearchBox = ({
                                 action
                             >
                                 <Row>
-                                    <Col>
-                                        Name: {result.token.name}
-                                    </Col>
-                                    <Col>
-                                        Symbol: {result.token.symbol}
-                                    </Col>
-                                    <Col>
-                                        Address: {result.token.address.substring(0, 10)}...
-                                    </Col>
-                                    <Col>
-                                        Created: {new Date(result.pairCreatedAt).toString()}
-                                    </Col>
+                                    <Row className="mb-1">
+                                        <Col md={{span: 3}}>
+                                            Token: <strong>{result.token.name}</strong> ({result.token.symbol})
+                                        </Col>
+                                        <Col md={{span: 2}}>
+                                            Age: {calculateAge(result.pairCreatedAt)}
+                                        </Col>
+                                        <Col>
+                                            Liquidity: {
+                                                result.liquidity ? 
+                                                    result.liquidity.usd ? 
+                                                        `$${Number(result.liquidity.usd).toFixed(0)}`
+                                                        : `${Number(result.liquidity.base).toFixed(0)} ${result.baseToken.symbol}`
+                                                        : 'N/A'
+                                            }
+                                        </Col>
+                                    </Row>
+                                    <Row className="mb-1">
+                                        <Col md={{span: 3}}>
+                                            {result.token.symbol}: {result.token.address.substring(0, 10)}...
+                                        </Col>
+                                        <Col md={{span: 2}}>
+                                            Pair: {result.pairAddress.substring(0, 10)}...
+                                        </Col>
+                                        <Col>
+                                            24H Volume: {`$${Number(result.h24vol).toFixed(0)}`}
+                                        </Col>
+                                    </Row>
                                 </Row>
                             </ListGroup.Item>
                         ))}

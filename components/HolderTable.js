@@ -10,7 +10,8 @@ const HolderTable = ({
     handleSort,
     walletTimeStats,
     filtered_holders,
-    holderEarlyAlpha
+    holderEarlyAlpha,
+    chain
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25) // change this to the desired number of rows per page
@@ -54,7 +55,7 @@ const HolderTable = ({
                 <th>Averages</th>
                 <th>{Number(calculateAverage(rows.map(r => r.holding)) * 100).toFixed(3) + ' %'}</th>
                 <th>{'$' + Number(calculateAverage(rows.map(r => r.wallet_value))).toFixed(2)}</th>
-                <th>{Number(calculateAverage(rows.map(r => r.early_alpha ? r.early_alpha.length : 0))).toFixed(2) + ' tokens'}</th>
+                {/* <th>{Number(calculateAverage(rows.map(r => r.early_alpha ? r.early_alpha.length : 0))).toFixed(2) + ' tokens'}</th> */}
                 <th>{Number(calculateAverage(rows.map(r => r.rug_count ? r.rug_count : 0))).toFixed(2) + ' rugs'}</th>
                 <th>{Number(calculateAverage(rows.map(r => r.avg_time ? r.avg_time : 0))).toFixed(2) + ' hours'}</th>
                 <th>{Number(calculateAverage(rows.map(r => r.wallet_age ? r.wallet_age : 0))).toFixed(2) + ' days'}</th>
@@ -62,6 +63,8 @@ const HolderTable = ({
             </tr>
         )
     }
+
+    var block_exp_url = chain.toLowerCase() == 'ethereum' ? process.env.NEXT_PUBLIC_ETHEREUM_EXP : process.env.NEXT_PUBLIC_ARBITRUM_EXP
 
     return (
         <>
@@ -122,10 +125,10 @@ const HolderTable = ({
                                 </Button>
                                 <TableHeadToolTip headerName='wallet value' />
                             </th>
-                            <th>
+                            {/* <th>
                                 Early Alpha <br />
                                 <TableHeadToolTip headerName='early alpha' />
-                            </th>
+                            </th> */}
                             <th onClick={() => handleSort("rug_count")}>
                                 Rugs / Apes<br />
                                 <Button
@@ -235,7 +238,7 @@ const HolderTable = ({
                                                 <a
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    href={`${process.env.NEXT_PUBLIC_ARBISCAN_URL}/address/${holder.address}`}
+                                                    href={`${block_exp_url}/address/${holder.address}`}
                                                 >
                                                     {
                                                         holder.address_name ?
@@ -269,7 +272,7 @@ const HolderTable = ({
                                                 </Placeholder>
                                         }
                                     </td>
-                                    <td>
+                                    {/* <td>
                                         {
                                             holder && !holder.address_name
                                                 ? holder && holderEarlyAlpha.length == 0 ?
@@ -290,7 +293,7 @@ const HolderTable = ({
                                                     }</ul>
                                                 : 'N/A'
                                         }
-                                    </td>
+                                    </td> */}
                                     <td>
                                         {
                                             holder && !holder.address_name

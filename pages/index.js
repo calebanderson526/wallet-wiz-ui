@@ -133,8 +133,8 @@ const Index = () => {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/${chain.toLowerCase()}/holders`,
         {
           address: token.address,
-          start_date: token.pairCreatedAt,
-          snapshot_time: hoursAfterLaunch != -1 ? token.pairCreatedAt + hoursToMilliseconds(hoursAfterLaunch) : -1
+          from_block: 'earliest',
+          to_block: 'latest'
         },
         {
           headers: {
@@ -166,18 +166,18 @@ const Index = () => {
           mutateHolderCall('/holder-rug-vs-ape', res.data.holders)
             .then((holderRugVsApeRes) => {
               setHolderRugVsApe(holderRugVsApeRes.holders)
-              setCommonRugs(holderRugVsApeRes.common_rugs)
-              setCommonApes(holderRugVsApeRes.common_apes)
+              setCommonRugs(holderRugVsApeRes.common_rugs.length == 0 ? [{name: "NO DATA", address: "NO DATA", count: "NO DATA"}] : holderRugVsApeRes.common_rugs)
+              setCommonApes(holderRugVsApeRes.common_apes.length == 0 ? [{name: "NO DATA", address: "NO DATA", count: "NO DATA"}] : holderRugVsApeRes.common_apes)
             }).catch((error) => {
               setError(error)
             })
 
-          mutateHolderCall('/early-alpha', res.data.holders)
-            .then((earlyAlphaRes) => {
-              setHolderEarlyAlpha(earlyAlphaRes.holders)
-            }).catch((error) => {
-              setError(error)
-            })
+          // mutateHolderCall('/early-alpha', res.data.holders)
+          //   .then((earlyAlphaRes) => {
+          //     setHolderEarlyAlpha(earlyAlphaRes.holders)
+          //   }).catch((error) => {
+          //     setError(error)
+          //   })
 
           mutateHolderCall('/wallet-time-stats', res.data.holders)
             .then((walletTimeStatsRes) => {
@@ -280,13 +280,16 @@ const Index = () => {
             <CommonTokens
               commonTokens={commonApes}
               text={'apes'}
-              showCommonCards={showCommonCards} />
+              showCommonCards={showCommonCards}
+              chain={chain}
+            />
           </Col>
           <Col md={{ 'offset': 0, 'span': 4 }}>
             <CommonTokens
               commonTokens={commonRugs}
               text={'rugs'}
               showCommonCards={showCommonCards}
+              chain={chain}
             />
           </Col>
           <Col md={{ 'offset': 0, 'span': 4 }}>
@@ -294,6 +297,7 @@ const Index = () => {
               commonTokens={commonFunders}
               text={'funders'}
               showCommonCards={showCommonCards}
+              chain={chain}
             />
           </Col>
         </Row>
@@ -328,6 +332,7 @@ const Index = () => {
                     filtered_holders={filtered_holders}
                     walletTimeStats={walletTimeStats}
                     holderEarlyAlpha={holderEarlyAlpha}
+                    chain={chain}
                   />
                 </>
               )
