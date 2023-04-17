@@ -46,7 +46,7 @@ const HolderTable = ({
     }
 
     const tableAverages = () => {
-        if (!rows.length || !walletTimeStats.length || !holderEarlyAlpha.length) {
+        if (!rows.length || !walletTimeStats.length ) {
             return ''
         }
         return (
